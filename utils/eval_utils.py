@@ -2,17 +2,10 @@ import json
 import os
 
 import cv2
-import evo
 import csv
 import numpy as np
 import torch
 import pandas as pd
-from evo.core import metrics, trajectory
-from evo.core.metrics import PoseRelation, Unit
-from evo.core.trajectory import PosePath3D, PoseTrajectory3D
-from evo.tools import plot
-from evo.tools.plot import PlotMode
-from evo.tools.settings import SETTINGS
 from matplotlib import pyplot as plt
 from scipy.spatial.transform import Rotation as Rot
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
@@ -51,6 +44,13 @@ def write_vslamlab_trajectory(frames, kf_ids, exp_folder, exp_id, rgb_csv, cam_n
             writer.writerow([ts, tx, ty, tz, qx, qy, qz, qw])
               
 def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
+    # evo is imported lazily: only MonoGS's own ATE evaluation (eval_ate / eval_rendering) needs
+    # it, and it is an optional dependency of the packaged baseline (its conda dependency chain,
+    # contextily -> rasterio -> proj, conflicts with the GUI-enabled open3d on Python < 3.12).
+    from evo.core import metrics, trajectory
+    from evo.core.trajectory import PosePath3D
+    from evo.tools import plot
+
     ## Plot
     traj_ref = PosePath3D(poses_se3=poses_gt)
     traj_est = PosePath3D(poses_se3=poses_est)
@@ -74,12 +74,12 @@ def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
     ) as f:
         json.dump(ape_stats, f, indent=4)
 
-    plot_mode = evo.tools.plot.PlotMode.xy
+    plot_mode = plot.PlotMode.xy
     fig = plt.figure()
-    ax = evo.tools.plot.prepare_axis(fig, plot_mode)
+    ax = plot.prepare_axis(fig, plot_mode)
     ax.set_title(f"ATE RMSE: {ape_stat}")
-    evo.tools.plot.traj(ax, plot_mode, traj_ref, "--", "gray", "gt")
-    evo.tools.plot.traj_colormap(
+    plot.traj(ax, plot_mode, traj_ref, "--", "gray", "gt")
+    plot.traj_colormap(
         ax,
         traj_est_aligned,
         ape_metric.error,
