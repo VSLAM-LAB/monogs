@@ -228,6 +228,10 @@ class SLAM_GUI:
         if not glfw.init():
             exit(1)
 
+        # Window hints are global GLFW state. When open3d links the shared libglfw (conda-forge builds),
+        # the core-profile / forward-compatible hints its Filament window set above would otherwise apply
+        # here too, and legacy calls such as glEnable(GL_TEXTURE_2D) then fail with "invalid enumerant".
+        glfw.default_window_hints()
         glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
 
         window = glfw.create_window(
