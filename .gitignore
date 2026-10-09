@@ -19,3 +19,6 @@ result*
 # VSLAM-LAB
 install_monogs.txt
 install_monogs-dev.txt
+# pixi
+.pixi/
+output/

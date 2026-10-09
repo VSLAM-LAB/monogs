@@ -77,5 +77,25 @@ docstring-code-format = false
 docstring-code-line-length = "dynamic"
 
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=77", "wheel", "torch"]
 build-backend = "setuptools.build_meta"
+
+# Not published as a conda package: the MonoGS licence (LICENSE.md, Imperial College London) is personal to the
+# licensee and does not allow transferring copies to third parties. Users build it from source (pixi run install).
+[project]
+name = "monogs"
+version = "1.1"
+description = "Gaussian Splatting SLAM (MonoGS)"
+readme = "README.md"
+license = "LicenseRef-MonoGS"
+license-files = ["LICENSE.md", "submodules/diff-gaussian-rasterization/LICENSE.md"]
+authors = [{ name = "Hidenobu Matsuki" }, { name = "Riku Murai" }, { name = "Paul H. J. Kelly" }, { name = "Andrew J. Davison" }]
+requires-python = ">=3.9"
+
+[project.scripts]
+vslamlab_monogs_mono = "vslamlab_monogs_mono:main"
+vslamlab_monogs_rgbd = "vslamlab_monogs_rgbd:main"
+
+[project.urls]
+Homepage = "https://rmurai.co.uk/projects/GaussianSplattingSLAM/"
+Repository = "https://github.com/VSLAM-LAB/monogs"

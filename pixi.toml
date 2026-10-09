@@ -1,0 +1,84 @@
+# Development environment for MonoGS: `pixi run install` compiles simple-knn and diff-gaussian-rasterization in place
+# (for the local GPU) against this environment and installs the repo in editable mode. Python edits apply immediately;
+# after editing *.cu or *.cpp run `pixi run install` again.
+#
+# MonoGS is NOT published as a conda package: its licence (LICENSE.md, Imperial College London) is personal to the
+# licensee and does not allow transferring copies to third parties, so every user builds it from source. [package]
+# below only declares the dependencies, which [dev] installs into the environment (monogs itself is not built).
+[workspace]
+authors = ["vslamlab <vslamlab@gmail.com>"]
+channels = ["https://prefix.dev/conda-forge"]
+name = "monogs"
+platforms = [{ name = "linux-64-cuda129", platform = "linux-64", cuda = "12.9" }]
+version = "0.1.0"
+preview = ["pixi-build"]
+
+[package]
+name = "monogs"
+version = "1.1"
+description = "Gaussian Splatting SLAM (MonoGS)"
+license = "LicenseRef-MonoGS"
+homepage = "https://rmurai.co.uk/projects/GaussianSplattingSLAM/"
+repository = "https://github.com/VSLAM-LAB/monogs"
+
+[package.build]
+backend = { name = "pixi-build-python", version = "0.*" }
+
+[package.build.config]
+noarch = false
+compilers = ["c", "cxx", "cuda"]
+installer = "pip"
+
+[package.build-dependencies]
+ninja = "*"
+
+[package.host-dependencies]
+python = "*"
+pip = "*"
+setuptools = "*"
+pytorch-gpu = "2.7.*"   # same torch as the other VSLAM-LAB baselines
+cuda-version = "12.9.*" # the GUI-enabled open3d below only solves with the cuda129 pytorch
+cuda-cudart-dev = "*"
+libcublas-dev = "*"     # headers pulled in by ATen/cuda/CUDAContext.h
+libcusparse-dev = "*"
+libcusolver-dev = "*"
+
+[package.run-dependencies]
+python = "*"
+pytorch-gpu = "2.7.*"   # the extensions are compiled against this torch ABI
+torchvision = "*"
+numpy = "*"
+# gui/slam_gui.py imports open3d.visualization.gui unconditionally; only the BUILD_GUI=ON conda-forge builds (build
+# number >= 103) ship it
+open3d = { version = "0.19.*", build-number = ">=103" }
+opencv = "*"
+pyyaml = "*"
+wandb = "*"
+pyopengl = "*"
+munch = "*"
+pandas = "*"
+trimesh = "*"
+tqdm = "*"
+torchmetrics = "*"
+scipy = "*"
+rich = "*"
+plyfile = "*"
+pillow = "*"
+matplotlib-base = "*"
+imgviz = "*"
+pyglm = "*"
+pyglfw = "*"
+lpips = "*"
+# no evo: MonoGS uses it only in its own ATE evaluation (utils/eval_utils.evaluate_evo, imported lazily)
+
+[tasks]
+install = "pip install --no-build-isolation --no-deps -e ."
+execute-mono = "vslamlab_monogs_mono"
+execute-rgbd = "vslamlab_monogs_rgbd"
+test = "python -I -c 'import simple_knn._C, diff_gaussian_rasterization, open3d.visualization.gui, gaussian_splatting.scene.gaussian_model, gui.slam_gui, utils.slam_frontend, utils.slam_backend, utils.eval_utils, vslamlab_monogs_mono, vslamlab_monogs_rgbd; import numpy; print(numpy.__version__)' && vslamlab_monogs_mono --help > /dev/null && vslamlab_monogs_rgbd --help > /dev/null && echo OK"
+
+[dev]
+monogs = { path = "." }
+
+[dependencies]
+python = "3.11.*"
